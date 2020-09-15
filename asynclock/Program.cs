@@ -15,21 +15,16 @@ namespace asynclock
         //这里是模拟一些库函数，也就是不属于当前项目，无法修改
         static async void WriteIncreasedNumber()
         {
-            await readLock.WaitAsync();
-            try
+            AutoResetEvent ev = new AutoResetEvent(false);
+            while (ev.WaitOne(1, false) == false)
             {
                 await Task.Run(() =>
                 {
                     Console.WriteLine(n++);
                     Thread.Sleep(10);//模拟一些耗时操作
                 });
+                ev.Set();
             }
-            finally
-            {
-                readLock.Release();
-            }
-
-
         }
         private static readonly SemaphoreSlim readLock = new SemaphoreSlim(1, 1);
         //目标：让输出的数字变得有序递增
