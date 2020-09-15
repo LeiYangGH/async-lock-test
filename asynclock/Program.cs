@@ -18,16 +18,22 @@ namespace asynclock
             Task.Run(() =>
             {
                 Console.WriteLine(n++);
-                Thread.Sleep(100);//模拟一些耗时操作
+                Thread.Sleep(1000);//模拟一些耗时操作
             });
 
         }
         //目标：让输出的数字变得有序递增
         static void Main(string[] args)
         {
+
+            AutoResetEvent ev = new AutoResetEvent(false);
             for (int i = 0; i < 10; i++)
             {
-                WriteIncreasedNumber();
+                while (ev.WaitOne(1, false) == false)
+                {
+                    WriteIncreasedNumber();
+                    ev.Set();
+                }
             }
             Console.ReadKey();
         }
