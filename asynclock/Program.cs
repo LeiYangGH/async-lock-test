@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Nito.AsyncEx;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,28 +11,21 @@ namespace asynclock
     class Program
     {
         static int n = 0;
-        static object o = new object();
+        private static readonly AsyncLock _mutex = new AsyncLock();
 
         //这里是模拟一些库函数，也就是不属于当前项目，无法修改
         static async void WriteIncreasedNumber()
         {
-            await readLock.WaitAsync();
-            try
+            using (await _mutex.LockAsync())
             {
                 await Task.Run(() =>
                 {
                     Console.WriteLine(n++);
-                    Thread.Sleep(10);//模拟一些耗时操作
+                    Thread.Sleep(1000);//模拟一些耗时操作
                 });
             }
-            finally
-            {
-                readLock.Release();
-            }
-
 
         }
-        private static readonly SemaphoreSlim readLock = new SemaphoreSlim(1, 1);
         //目标：让输出的数字变得有序递增
         static void Main(string[] args)
         {
